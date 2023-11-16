@@ -2,6 +2,8 @@
 #include <math.h>
 #include <stdlib.h>
 
+#include "word.h"
+
 int main(){
     char line[100];
     int n;
