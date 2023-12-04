@@ -1,5 +1,7 @@
-#define MAX_LENGTH 100
+#include <assert.h>
+#include <ctype.h>
 #include <time.h>
+#define MAX_LENGTH 100
 
 void strlower(char *p){
     while (*p){
@@ -21,7 +23,7 @@ struct timespec diff_timespec(const struct timespec *time1,
 }
 
 typedef struct word_info{
-      char * word;
+      char *word;
       int count;
-      struct word_info* next;
+      struct word_info *next;
 } word_info;

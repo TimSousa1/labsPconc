@@ -6,41 +6,41 @@
 #include <assert.h>
 #include "utils.h"
 
-/* program that count unique words per letter*/
+/* program that counts unique words per letter*/
 
 
-word_info * words_lists[26];
+word_info *words_lists[26];
 int n_total_words;
-char ** word_array;
+char **word_array;
 
 void find_unique_words_letters(){
 
-    word_info *  list_aux;
- 
-    // iterates all words in the array
+    word_info *list_aux;
+
+    // iterates through all words in the array
     for (int i =0; i< n_total_words;i++){
-        //verifys if start with letter
+        //verifies if the word starts with a letter
         if (isalpha(word_array[i][0])){
             char current_letter = word_array[i][0];
             list_aux = words_lists[current_letter - 'a'];
-            // finds occurrenc of word in the suitable list
+            // finds occurrences of the word in it's list
             while(list_aux->next != NULL){
-                // if word is found increments the counter and stops seraching
+                // if the word is found, increment the counter and stop searching
                 if( strcmp(word_array[i],list_aux->next->word)==0){
                     list_aux->next->count ++;
                     break;
                 }
                 list_aux=list_aux->next;
             }
-            // if we reached the end of the list
+            // if we the end of the list is reached..
             if(list_aux->next == NULL){
-                // insert new word to the list
+                // insert new word in the list
                 list_aux->next = malloc(sizeof(word_info));
                 list_aux->next->next = NULL;
                 list_aux->next->count = 1;
                 list_aux->next->word = word_array[i];
             }
-            
+
         }
     }
 }
@@ -65,12 +65,12 @@ void print_more_freq_words_letters(){
             }
             list_aux  = list_aux ->next;
         }
-    printf("%c %s %d\n", c, more_freq_word, more_freq_word_count);
+        printf("%c %s %d\n", c, more_freq_word, more_freq_word_count);
     }
 
 }
 
- void  read_word_array(){
+void  read_word_array(){
 
     FILE * fp;
 
@@ -83,7 +83,7 @@ void print_more_freq_words_letters(){
     printf("nwords - %d\n", n_total_words);
     fclose(fp);
 
-    // cretaes one list per letter
+    // creates one list per letter
     for (int c ='a'; c <= 'z'; c++){
         words_lists[c-'a']=  malloc(sizeof(word_info));
         words_lists[c-'a']->next = NULL;
@@ -95,7 +95,7 @@ void print_more_freq_words_letters(){
 
     // inserts all words in the array
     fp = fopen("./lusiadas-words.txt", "r");  
-    for (int i = 0; i< n_total_words; i++){
+    for (int i = 0; i < n_total_words; i++){
         word_array[i] = calloc(sizeof(char), MAX_LENGTH);
         fgets(word_array[i], 100, fp);
         strlower (word_array[i]);
@@ -136,21 +136,21 @@ int main(){
     clock_gettime(CLOCK_MONOTONIC, &start_time_total);
 
     // Read of words into word_array
-        clock_gettime(CLOCK_MONOTONIC, &start_time_seq_1);
+    clock_gettime(CLOCK_MONOTONIC, &start_time_seq_1);
     read_word_array();
-        clock_gettime(CLOCK_MONOTONIC, &end_time_seq_1);
+    clock_gettime(CLOCK_MONOTONIC, &end_time_seq_1);
 
 
     // creation of lists of uniq words
-        clock_gettime(CLOCK_MONOTONIC, &start_time_par_1);
+    clock_gettime(CLOCK_MONOTONIC, &start_time_par_1);
     find_unique_words_letters();
-        clock_gettime(CLOCK_MONOTONIC, &end_time_par_1);
+    clock_gettime(CLOCK_MONOTONIC, &end_time_par_1);
 
 
     // printing of more frequent words per letter
-        clock_gettime(CLOCK_MONOTONIC, &start_time_par_2);
+    clock_gettime(CLOCK_MONOTONIC, &start_time_par_2);
     print_more_freq_words_letters();
-        clock_gettime(CLOCK_MONOTONIC, &end_time_par_2);
+    clock_gettime(CLOCK_MONOTONIC, &end_time_par_2);
 
     clock_gettime(CLOCK_MONOTONIC, &start_time_seq_2);
     delete_word_array();
@@ -158,22 +158,43 @@ int main(){
     clock_gettime(CLOCK_MONOTONIC, &end_time_seq_2);
 
     clock_gettime(CLOCK_MONOTONIC, &end_time_total);
-struct timespec seq_1_time = diff_timespec(&end_time_seq_1, &start_time_seq_1);
-struct timespec seq_2_time = diff_timespec(&end_time_seq_2, &start_time_seq_2);
-struct timespec par_1_time = diff_timespec(&end_time_par_1, &start_time_par_1);
-struct timespec par_2_time = diff_timespec(&end_time_par_2, &start_time_par_2);
-struct timespec total_time = diff_timespec(&end_time_total, &start_time_total);
+    struct timespec seq_1_time = diff_timespec(&end_time_seq_1, &start_time_seq_1);
+    struct timespec seq_2_time = diff_timespec(&end_time_seq_2, &start_time_seq_2);
+    struct timespec par_1_time = diff_timespec(&end_time_par_1, &start_time_par_1);
+    struct timespec par_2_time = diff_timespec(&end_time_par_2, &start_time_par_2);
+    struct timespec total_time = diff_timespec(&end_time_total, &start_time_total);
     printf("\tseq 1\t %10jd.%09ld\n",
-                   seq_1_time.tv_sec, seq_1_time.tv_nsec);
+            seq_1_time.tv_sec, seq_1_time.tv_nsec);
     printf("\tseq 2\t %10jd.%09ld\n",
-                   seq_2_time.tv_sec, seq_2_time.tv_nsec);
+            seq_2_time.tv_sec, seq_2_time.tv_nsec);
     printf("\tpar 1 \t %10jd.%09ld\n",
-                   par_1_time.tv_sec, par_1_time.tv_nsec);
+            par_1_time.tv_sec, par_1_time.tv_nsec);
     printf("\tpar 2 \t %10jd.%09ld\n",
-                   par_2_time.tv_sec, par_2_time.tv_nsec);
+            par_2_time.tv_sec, par_2_time.tv_nsec);
     printf("total \t %10jd.%09ld\n",
-                   total_time.tv_sec, total_time.tv_nsec);
+            total_time.tv_sec, total_time.tv_nsec);
 
 
     exit(0);
 }
+
+/*
+seq 1            6.417117223
+seq 2            0.192842990
+par 1           14.075368674
+par 2            0.000234675
+total           20.685563956
+*/
+
+/*                          pc1      |     pc2
+ * cpus                      8       |      4
+ * total time           6.679409384  |  20.685563956
+ * parallel time                     | 
+ * sequential time                   |
+ * Fpar                              |
+ * Fser                              |
+ * Maxspeedup                        |
+ *
+ *
+ *
+ */
