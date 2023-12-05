@@ -4,36 +4,79 @@
 #include <string.h>
 #include <time.h>
 #include <assert.h>
+#include <pthread.h>
 #include "utils.h"
 
 /* program that counts unique words per letter*/
 
-
 word_info *words_lists[26];
 int n_total_words;
 char **word_array;
+
+void *thread_find_unique_words_letters(void *chr){
+    char c = *(char *) chr;
+    printf("got char %c\n", c);
+
+    word_info *list_aux = words_lists[c - 'a'];
+
+    // iterates through all words in the array
+    for (int i = 0; i < n_total_words; i++){
+
+        // verifies if the word starts with a letter
+        if (isalpha(word_array[i][0])){
+            if (word_array[i][0] != c) continue;
+
+            // finds occurrences of the word in it's list
+            for(list_aux = words_lists[c - 'a']; list_aux->next != NULL;){
+
+                // if the word is found, increment the counter and stop searching
+                if(strcmp(word_array[i], list_aux->next->word) == 0){
+                    list_aux->next->count++;
+                    break;
+                }
+                list_aux=list_aux->next;
+            }
+            // if the end of the list is reached..
+            if(list_aux->next == NULL){
+
+                // insert new word in the list
+                list_aux->next = malloc(sizeof(word_info));
+                list_aux->next->next = NULL;
+                list_aux->next->count = 1;
+                list_aux->next->word = word_array[i];
+            }
+
+        }
+    }
+    return NULL;
+}
+
 
 void find_unique_words_letters(){
 
     word_info *list_aux;
 
     // iterates through all words in the array
-    for (int i =0; i< n_total_words;i++){
+    for (int i = 0; i< n_total_words;i++){
+
         //verifies if the word starts with a letter
         if (isalpha(word_array[i][0])){
             char current_letter = word_array[i][0];
             list_aux = words_lists[current_letter - 'a'];
+
             // finds occurrences of the word in it's list
             while(list_aux->next != NULL){
+
                 // if the word is found, increment the counter and stop searching
-                if( strcmp(word_array[i],list_aux->next->word)==0){
-                    list_aux->next->count ++;
+                if( strcmp(word_array[i], list_aux->next->word) == 0){
+                    list_aux->next->count++;
                     break;
                 }
                 list_aux=list_aux->next;
             }
-            // if we the end of the list is reached..
+            // if the end of the list is reached..
             if(list_aux->next == NULL){
+
                 // insert new word in the list
                 list_aux->next = malloc(sizeof(word_info));
                 list_aux->next->next = NULL;
@@ -50,8 +93,10 @@ void find_unique_words_letters(){
 void print_more_freq_words_letters(){
     word_info * list_aux;
     char more_freq_word[100];
+
     // iterates all list of words
     for (int c ='a'; c <= 'z'; c++){
+
         // initializes more frequentg word and its values
         int more_freq_word_count = 0;
         strcpy(more_freq_word, "");
@@ -70,7 +115,7 @@ void print_more_freq_words_letters(){
 
 }
 
-void  read_word_array(){
+void read_word_array(){
 
     FILE * fp;
 
@@ -92,14 +137,13 @@ void  read_word_array(){
     // creates the array of words
     word_array = calloc(sizeof(char*), n_total_words);
 
-
     // inserts all words in the array
     fp = fopen("./lusiadas-words.txt", "r");  
     for (int i = 0; i < n_total_words; i++){
         word_array[i] = calloc(sizeof(char), MAX_LENGTH);
         fgets(word_array[i], 100, fp);
         strlower (word_array[i]);
-        if (word_array[i][strlen(word_array[i])-1] =='\n'){
+        if (word_array[i][strlen(word_array[i])-1] == '\n'){
             word_array[i][strlen(word_array[i])-1] = '\0';
         }
     }
@@ -143,9 +187,29 @@ int main(){
 
     // creation of lists of uniq words
     clock_gettime(CLOCK_MONOTONIC, &start_time_par_1);
-    find_unique_words_letters();
-    clock_gettime(CLOCK_MONOTONIC, &end_time_par_1);
 
+#ifdef MULTI_THREADING
+    
+#define N_THREADS 26
+
+    pthread_t threads[N_THREADS];
+    int chars_array[N_THREADS];
+    for (int i = 0; i < N_THREADS; i++){
+        chars_array[i] = i + 'a';
+        printf("creating thread %i\n", i);
+        pthread_create(&threads[i], NULL, thread_find_unique_words_letters, (void *) &chars_array[i]);
+    }
+
+    for (int i = 0; i < N_THREADS; i++) {
+        printf("waiting for thread %i\n", i);
+        pthread_join(threads[i], NULL);
+    }
+
+#else
+    find_unique_words_letters();
+#endif
+
+    clock_gettime(CLOCK_MONOTONIC, &end_time_par_1);
 
     // printing of more frequent words per letter
     clock_gettime(CLOCK_MONOTONIC, &start_time_par_2);
