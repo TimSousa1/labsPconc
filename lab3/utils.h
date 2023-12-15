@@ -27,3 +27,8 @@ typedef struct word_info{
       int count;
       struct word_info *next;
 } word_info;
+
+typedef struct arg_threads{
+    char c_start;
+    char c_end;
+} arg_threads;
