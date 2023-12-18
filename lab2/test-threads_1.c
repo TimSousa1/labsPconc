@@ -13,7 +13,7 @@ void *thread_function(void *arg){
         printf("inside Thread %lu %d\n", r, n);
     }
     printf("End Thread %lu\n", r);
-    return (void *)r;
+    return (void *) r;
 }
 
 int main(){

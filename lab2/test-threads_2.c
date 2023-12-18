@@ -15,7 +15,7 @@ void * thread_function(void *arg){
         printf("got arg %d\n", arg_n);
     }
     printf("End Thread %lu\n", r);
-    return (void *)r;
+    return (void *) r;
 }
 
 int main(){

@@ -8,7 +8,7 @@
  * 
  */
 typedef struct {
-    int *pipe_fd;
+    int pipe_read;
     int thread_id;
 } thread_arg;
 
@@ -16,7 +16,7 @@ void *thread_read_values(void *arg){
     thread_arg val = *(thread_arg *) arg;
     int n;
     while (1){
-        read(val.pipe_fd[0], &n, sizeof(n));
+        read(val.pipe_read, &n, sizeof(n));
         printf("\tthread %d read %d\n", val.thread_id, n);
     }
     return NULL;
@@ -32,12 +32,13 @@ int main(){
         printf("error creating the pipe");
         exit(-1);
     }
+
 #define N_THREADS 4
     pthread_t threads[N_THREADS];
     thread_arg arg[N_THREADS];
 
     for (int i = 0; i < N_THREADS; i++){
-        arg[i].pipe_fd = pipe_fd;
+        arg[i].pipe_read = pipe_fd[0];
         arg[i].thread_id = i;
         pthread_create(&threads[i], NULL, thread_read_values, (void *) &arg[i]);
     }
